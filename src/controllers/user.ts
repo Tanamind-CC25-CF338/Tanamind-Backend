@@ -43,3 +43,50 @@ export const signupUser = async (
     return response(500, null, 'Server error when signup', res);
   }
 };
+
+export const loginUser = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return response(400, null, 'All fields are required', res);
+    }
+
+    const checkToken = req.cookies.token;
+    if (checkToken) {
+      return response(400, null, 'You have logged in', res);
+    }
+
+    const user = await findUserByEmail(email);
+
+    if (!user || !user.password) {
+      return response(
+        404,
+        null,
+        'User not found, please create an account',
+        res
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user?.password);
+    if (!isPasswordValid) {
+      return response(400, null, 'Invalid email or password', res);
+    }
+
+    const token = generateTokenAndSetCookie(user.id, user.name, res);
+
+    const userData = {
+      token,
+      userId: user.id,
+      email: user.email,
+    };
+
+    return response(200, userData, 'Login Success', res);
+  } catch (error) {
+    console.log(error);
+    return response(500, null, 'Server error when user login', res);
+  }
+};
