@@ -90,3 +90,16 @@ export const loginUser = async (
     return response(500, null, 'Server error when user login', res);
   }
 };
+
+export const logoutUser = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    res.clearCookie('token');
+    return response(200, null, 'Logout successfully', res);
+  } catch (error) {
+    console.log(error);
+    return response(500, null, 'Server error when user logout', res);
+  }
+};
