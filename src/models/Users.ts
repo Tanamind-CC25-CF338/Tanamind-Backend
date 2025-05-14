@@ -65,4 +65,6 @@ export const updatePassword = async (userId: string, newPassword: string) => {
       password: newPassword,
     },
   });
+
+  return user;
 };

@@ -2,7 +2,13 @@ import express from 'express';
 import response from '../response';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { createUser, findUserByEmail } from '../models/Users';
+import {
+  createUser,
+  findResetPasswordTokenUser,
+  findUserByEmail,
+  updatePassword,
+  updateResetPasswordToken,
+} from '../models/Users';
 import { generateTokenAndSetCookie } from '../utils/generateTokenAndSetCookies';
 import { authorizationUrl, oauth2Client } from '../utils/loginWithGoogle';
 import { google } from 'googleapis';
@@ -209,5 +215,53 @@ export const forgotPassword = async (
       'Server error when user request forgot password',
       res
     );
+  }
+};
+
+export const resetPassword = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { resetPasswordToken } = req.params;
+    const { password, rePassword } = req.body;
+
+    if (!password || !rePassword) {
+      return response(400, null, 'All fields are required', res);
+    }
+
+    const user = await findResetPasswordTokenUser(resetPasswordToken);
+
+    if (!user) {
+      return response(400, null, 'Invalid link or user not found', res);
+    }
+
+    const currentTime = Date.now();
+    if (
+      user.resetPasswordTokenExpired &&
+      user.resetPasswordTokenExpired.getTime() < currentTime
+    ) {
+      return response(
+        410,
+        null,
+        'Your link had expire, please request a new one',
+        res
+      );
+    }
+
+    if (password !== rePassword) {
+      return response(400, null, `Password doesn't match`, res);
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await updateResetPasswordToken(user.id, null, null);
+    await updatePassword(user.id, hashedPassword);
+
+    return response(200, user, 'Success reset password', res);
+  } catch (error) {
+    console.log(error);
+    return response(500, null, 'Server error when user reset password', res);
   }
 };
