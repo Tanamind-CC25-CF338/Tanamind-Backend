@@ -3,6 +3,8 @@ import response from '../response';
 import bcrypt from 'bcrypt';
 import { createUser, findUserByEmail } from '../models/Users';
 import { generateTokenAndSetCookie } from '../utils/generateTokenAndSetCookies';
+import { authorizationUrl, oauth2Client } from '../utils/loginWithGoogle';
+import { google } from 'googleapis';
 
 export const signupUser = async (
   req: express.Request,
@@ -88,6 +90,66 @@ export const loginUser = async (
   } catch (error) {
     console.log(error);
     return response(500, null, 'Server error when user login', res);
+  }
+};
+
+// Redirect login with Google
+export const loginWithGoogle = (
+  req: express.Request,
+  res: express.Response
+) => {
+  res.redirect(authorizationUrl);
+};
+
+// Login with Google controllers
+export const callbackLoginWithGoogle = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { code } = req.query;
+
+    const { tokens } = await oauth2Client.getToken(code as string);
+
+    oauth2Client.setCredentials(tokens);
+
+    const oaauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: 'v2',
+    });
+
+    const { data } = await oaauth2.userinfo.get();
+
+    if (!data.email) {
+      return response(404, data, 'User not found', res);
+    }
+
+    const user = await findUserByEmail(data.email);
+
+    let userData;
+
+    if (!user) {
+      userData = await createUser({
+        name: data.name,
+        email: data.email,
+        auth_provider: 'GOOGLE',
+      });
+    } else {
+      userData = user;
+    }
+
+    generateTokenAndSetCookie(userData.id, userData.name, res);
+
+    const clientURL: string | undefined = process.env.CLIENT_URL;
+
+    if (!clientURL) {
+      throw new Error('CLIENT_URL is not defined');
+    }
+
+    res.redirect(clientURL);
+  } catch (error) {
+    console.log(error);
+    return response(500, null, 'Server error when login with google', res);
   }
 };
 
