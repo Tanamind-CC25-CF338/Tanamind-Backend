@@ -1,10 +1,12 @@
 import express from 'express';
 import response from '../response';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { createUser, findUserByEmail } from '../models/Users';
 import { generateTokenAndSetCookie } from '../utils/generateTokenAndSetCookies';
 import { authorizationUrl, oauth2Client } from '../utils/loginWithGoogle';
 import { google } from 'googleapis';
+import { sendResetPasswordLink } from '../helper/sentEmail';
 
 export const signupUser = async (
   req: express.Request,
@@ -163,5 +165,49 @@ export const logoutUser = async (
   } catch (error) {
     console.log(error);
     return response(500, null, 'Server error when user logout', res);
+  }
+};
+
+export const forgotPassword = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return response(400, null, 'Email is required', res);
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return response(400, null, 'User not found', res);
+    }
+
+    const resetPasswordToken = crypto.randomBytes(20).toString('hex');
+    const resetPasswordTokenExpired = new Date(Date.now() + 5 * 60 * 1000);
+
+    const userTokenData = {
+      resetPasswordToken,
+      resetPasswordTokenExpired,
+    };
+
+    const resetPasswordUrl = `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`;
+    sendResetPasswordLink(user.email, resetPasswordUrl);
+
+    return response(
+      200,
+      userTokenData,
+      'Reset password link has been sent to your email',
+      res
+    );
+  } catch (error) {
+    console.log(error);
+    return response(
+      500,
+      null,
+      'Server error when user request forgot password',
+      res
+    );
   }
 };
