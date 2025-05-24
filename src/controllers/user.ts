@@ -45,7 +45,7 @@ export const signupUser = async (
       password: hashedPassword,
     });
 
-    generateTokenAndSetCookie(userData.id, userData.name, res);
+    generateTokenAndSetCookie(userData.id, userData.name, userData.email, res);
 
     return response(201, userData, 'Register Success!', res);
   } catch (error) {
@@ -86,12 +86,18 @@ export const loginUser = async (
       return response(400, null, 'Invalid email or password', res);
     }
 
-    const token = generateTokenAndSetCookie(user.id, user.name, res);
+    const token = generateTokenAndSetCookie(
+      user.id,
+      user.name,
+      user.email,
+      res
+    );
 
     const userData = {
       token,
       userId: user.id,
       email: user.email,
+      name: user.name,
     };
 
     return response(200, userData, 'Login Success', res);
@@ -146,9 +152,16 @@ export const callbackLoginWithGoogle = async (
       userData = user;
     }
 
-    generateTokenAndSetCookie(userData.id, userData.name, res);
+    const token = generateTokenAndSetCookie(
+      userData.id,
+      userData.name,
+      userData.email,
+      res
+    );
 
-    const clientURL: string | undefined = process.env.CLIENT_URL;
+    const clientURL:
+      | string
+      | undefined = `${process.env.CLIENT_URL}/callback-google?token=${token}`;
 
     if (!clientURL) {
       throw new Error('CLIENT_URL is not defined');

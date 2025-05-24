@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 function sendResetPasswordLink(userEmail: string, resetPasswordURL: string) {
   const mailOptions = {
-    from: `Swap Device Team <${process.env.EMAIL}>`,
+    from: `Tanamind Team <${process.env.EMAIL}>`,
     to: userEmail,
     subject: 'Reset Your Password',
     html: PASSWORD_RESET_REQUEST_TEMPLATE.replace(

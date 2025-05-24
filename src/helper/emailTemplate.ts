@@ -54,7 +54,7 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
         >
       </div>
       <p>Kode ini akan kedaluwarsa dalam 5 menit untuk alasan keamanan.</p>
-      <p>Hormat Kami,<br />Swap Device</p>
+      <p>Hormat Kami,<br />Tanamind</p>
     </div>
     <div
       style="
