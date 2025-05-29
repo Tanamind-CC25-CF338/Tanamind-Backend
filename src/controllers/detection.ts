@@ -1,22 +1,25 @@
 import { Request, Response } from 'express';
 import { forwardToFastAPI } from '../services/inferenceService';
 import { getDiagnosesByUser, saveDiagnose } from '../models/Detection';
+import response from '../response';
 
-export const deseaseDetection = async (req: Request, res: Response) => {
+export const deseaseDetection = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const tanaman = req.body.tanaman;
     const filePath = req.file?.path;
 
     if (!filePath || !tanaman) {
-      res.status(400).json({ message: 'File dan tanaman harus diisi.' });
-      return;
+      return response(400, null, 'File dan tanaman harus diisi.', res);
     }
 
     const result = await forwardToFastAPI(filePath, tanaman);
-    res.json(result);
+    return response(200, result, 'Berhasil melakukan prediksi', res);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Terjadi kesalahan saat prediksi.' });
+    console.error('❌ Error in deseaseDetection:', err);
+    return response(500, null, 'Terjadi kesalahan saat prediksi.', res);
   }
 };
 
@@ -25,12 +28,12 @@ export const saveDiagnosis = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId, tanaman, hasil, confidence, ciri, solusi, imageUrl } =
-      req.body;
+    const { userId, tanaman, hasil, confidence, ciri, solusi } = req.body;
+    const imageUrl =
+      (req.file as Express.Multer.File)?.path || req.body.imageUrl;
 
     if (!userId || !tanaman || !hasil || !confidence || !ciri || !solusi) {
-      res.status(400).json({ message: 'Data tidak lengkap' });
-      return;
+      return response(400, null, 'Data tidak lengkap', res);
     }
 
     const saved = await saveDiagnose({
@@ -38,17 +41,15 @@ export const saveDiagnosis = async (
       tanaman,
       hasil,
       confidence: parseFloat(confidence),
-      ciri,
-      solusi,
+      ciri: Array.isArray(ciri) ? ciri : [ciri],
+      solusi: Array.isArray(solusi) ? solusi : [solusi],
       imageUrl,
     });
 
-    res
-      .status(201)
-      .json({ message: 'Diagnosis berhasil disimpan', data: saved });
+    return response(201, saved, 'Diagnosis berhasil disimpan', res);
   } catch (err) {
     console.error('❌ Failed to save diagnosis:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    return response(500, null, 'Gagal menyimpan diagnosis.', res);
   }
 };
 
@@ -59,8 +60,9 @@ export const getDiagnosisHistory = async (
   try {
     const userId = req.params.userId;
     const history = await getDiagnosesByUser(userId);
-    res.status(200).json(history);
+    return response(200, history, 'Riwayat diagnosis berhasil diambil', res);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to retrieve diagnosis history' });
+    console.error('❌ Failed to get history:', err);
+    return response(500, null, 'Gagal mengambil riwayat diagnosis.', res);
   }
 };
