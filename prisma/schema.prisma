@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -23,6 +18,22 @@ model User {
   updated_at                DateTime     @updatedAt
   resetPasswordToken        String?
   resetPasswordTokenExpired DateTime?
+
+  Diagnosis Diagnosis[]
+}
+
+model Diagnosis {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tanaman     String
+  hasil       String
+  confidence  Float
+  ciri        String[]         // Simpan ciri-ciri sebagai array of string
+  solusi      String[]         // Rekomendasi penanganan
+  imageUrl    String?          // Jika kamu simpan path/URL gambar
+  createdAt   DateTime @default(now())
+
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 enum AuthProvider {
