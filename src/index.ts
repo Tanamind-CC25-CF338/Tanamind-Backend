@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth';
+import detectionRoutes from './routes/detection';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/detection', detectionRoutes);
 
 const PORT = process.env.PORT || 5000;
 
