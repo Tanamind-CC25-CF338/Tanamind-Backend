@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { forwardToFastAPI } from '../services/inferenceService';
 import { getDiagnosesByUser, saveDiagnose } from '../models/Detection';
+import { getDiseaseByName } from '../models/Disease';
 import response from '../response';
 
 export const deseaseDetection = async (
@@ -28,22 +29,26 @@ export const saveDiagnosis = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId, tanaman, hasil, confidence, ciri, solusi } = req.body;
+    const { userId, tanaman, hasil, confidence } = req.body;
     const imageUrl =
       (req.file as Express.Multer.File)?.path || req.body.imageUrl;
 
-    if (!userId || !tanaman || !hasil || !confidence || !ciri || !solusi) {
+    if (!userId || !tanaman || !hasil || !confidence) {
       return response(400, null, 'Data tidak lengkap', res);
+    }
+
+    // Ambil disease dari database berdasarkan hasil nama penyakit
+    const disease = await getDiseaseByName(hasil);
+    if (!disease) {
+      return response(404, null, 'Penyakit tidak ditemukan di database', res);
     }
 
     const saved = await saveDiagnose({
       userId,
       tanaman,
-      hasil,
       confidence: parseFloat(confidence),
-      ciri: Array.isArray(ciri) ? ciri : [ciri],
-      solusi: Array.isArray(solusi) ? solusi : [solusi],
       imageUrl,
+      diseaseId: disease.id,
     });
 
     return response(201, saved, 'Diagnosis berhasil disimpan', res);
