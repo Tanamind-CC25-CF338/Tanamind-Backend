@@ -19,7 +19,19 @@ export const deseaseDetection = async (
     const result = await forwardToFastAPI(filePath, tanaman);
     const { hasil: label, confidence } = result;
 
-    // Cari penyakit berdasarkan label
+    if (confidence < 0.9) {
+      return response(
+        200,
+        {
+          tanaman,
+          confidence,
+          disease: null,
+        },
+        'Tingkat keyakinan kurang dari 90%, penyakit tidak dapat diidentifikasi dengan akurat.',
+        res
+      );
+    }
+
     const disease = await getDiseaseByLabel(label);
 
     if (!disease) {
