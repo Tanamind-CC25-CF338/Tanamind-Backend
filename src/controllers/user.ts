@@ -45,8 +45,6 @@ export const signupUser = async (
       password: hashedPassword,
     });
 
-    generateTokenAndSetCookie(userData.id, userData.name, userData.email, res);
-
     return response(201, userData, 'Register Success!', res);
   } catch (error) {
     console.log(error);

@@ -17,3 +17,9 @@ export const getAllDiseases = async () => {
     orderBy: { name: 'asc' },
   });
 };
+
+export const getDiseaseByLabel = async (label: string) => {
+  return await prisma.disease.findFirst({
+    where: { label },
+  });
+};

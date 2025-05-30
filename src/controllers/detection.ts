@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { forwardToFastAPI } from '../services/inferenceService';
 import { getDiagnosesByUser, saveDiagnose } from '../models/Detection';
-import { getDiseaseByName } from '../models/Disease';
+import { getDiseaseByLabel, getDiseaseByName } from '../models/Disease';
 import response from '../response';
 
 export const deseaseDetection = async (
@@ -17,7 +17,36 @@ export const deseaseDetection = async (
     }
 
     const result = await forwardToFastAPI(filePath, tanaman);
-    return response(200, result, 'Berhasil melakukan prediksi', res);
+    const { hasil: label, confidence } = result;
+
+    // Cari penyakit berdasarkan label
+    const disease = await getDiseaseByLabel(label);
+
+    if (!disease) {
+      return response(
+        404,
+        null,
+        `Penyakit dengan label '${label}' tidak ditemukan.`,
+        res
+      );
+    }
+
+    const fullResult = {
+      tanaman,
+      confidence,
+      disease: {
+        id: disease.id,
+        label: disease.label,
+        name: disease.name,
+        penyebab: disease.penyebab,
+        deskripsi: disease.deskripsi,
+        pencegahan: disease.pencegahan,
+        pengendalian: disease.pengendalian,
+        tanaman: disease.tanaman,
+      },
+    };
+
+    return response(200, fullResult, 'Berhasil melakukan prediksi', res);
   } catch (err) {
     console.error('❌ Error in deseaseDetection:', err);
     return response(500, null, 'Terjadi kesalahan saat prediksi.', res);

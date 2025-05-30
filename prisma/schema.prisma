@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id                        String       @id @default(auto()) @map("_id") @db.ObjectId
-  name                      String
-  email                     String       @unique
-  password                  String?
-  auth_provider             AuthProvider @default(CREDENTIALS)
-  created_at                DateTime     @default(now())
-  updated_at                DateTime     @updatedAt
-  resetPasswordToken        String?
-  resetPasswordTokenExpired DateTime?
+  id                         String        @id @default(auto()) @map("_id") @db.ObjectId
+  name                       String
+  email                      String        @unique
+  password                   String?
+  auth_provider              AuthProvider  @default(CREDENTIALS)
+  created_at                 DateTime      @default(now())
+  updated_at                 DateTime      @updatedAt
+  resetPasswordToken         String?
+  resetPasswordTokenExpired  DateTime?
 
-  diagnoses                 Diagnosis[]
+  diagnoses                  Diagnosis[]
 }
 
 model Disease {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  label          String         @unique              
+  name           String                             
   penyebab       String
   deskripsi      String
   pencegahan     String[]
@@ -34,17 +35,17 @@ model Disease {
 }
 
 model Diagnosis {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
   tanaman     JenisTanaman
   confidence  Float
   imageUrl    String?
-  createdAt   DateTime      @default(now())
+  createdAt   DateTime       @default(now())
 
-  userId      String        @db.ObjectId
-  user        User          @relation(fields: [userId], references: [id])
+  userId      String         @db.ObjectId
+  user        User           @relation(fields: [userId], references: [id])
 
-  diseaseId   String        @db.ObjectId
-  disease     Disease       @relation(fields: [diseaseId], references: [id])
+  diseaseId   String         @db.ObjectId
+  disease     Disease        @relation(fields: [diseaseId], references: [id])
 }
 
 enum AuthProvider {
