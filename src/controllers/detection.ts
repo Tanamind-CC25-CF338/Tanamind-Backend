@@ -37,12 +37,19 @@ export const saveDiagnosis = async (
       return response(400, null, 'Data tidak lengkap', res);
     }
 
-    // Ambil disease dari database berdasarkan hasil nama penyakit
+    // Validasi bahwa tanaman sesuai enum
+    const allowedTanaman = ['TOMAT', 'CABAI', 'SELADA'];
+    if (!allowedTanaman.includes(tanaman)) {
+      return response(400, null, 'Jenis tanaman tidak valid', res);
+    }
+
+    // Cari disease berdasarkan hasil (nama penyakit)
     const disease = await getDiseaseByName(hasil);
     if (!disease) {
       return response(404, null, 'Penyakit tidak ditemukan di database', res);
     }
 
+    // Simpan diagnosis ke database
     const saved = await saveDiagnose({
       userId,
       tanaman,

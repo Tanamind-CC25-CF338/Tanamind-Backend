@@ -1,40 +1,56 @@
 import prisma from '../db';
 
+// Simpan hasil diagnosis ke database
 export const saveDiagnose = async ({
   userId,
   tanaman,
-  hasil,
   confidence,
-  ciri,
-  solusi,
   imageUrl,
+  diseaseId,
 }: {
   userId: string;
-  tanaman: string;
-  hasil: string;
+  tanaman: 'TOMAT' | 'CABAI' | 'SELADA'; // enum Tanaman
   confidence: number;
-  ciri: string[];
-  solusi: string[];
+  diseaseId: string;
   imageUrl?: string;
 }) => {
-  const diagnosis = await prisma.diagnosis.create({
+  return await prisma.diagnosis.create({
     data: {
       userId,
       tanaman,
-      hasil,
       confidence,
-      ciri,
-      solusi,
       imageUrl,
+      diseaseId,
     },
   });
-
-  return diagnosis;
 };
 
+// Ambil semua diagnosis berdasarkan user
 export const getDiagnosesByUser = async (userId: string) => {
-  return prisma.diagnosis.findMany({
+  return await prisma.diagnosis.findMany({
     where: { userId },
-    orderBy: { createdAt: 'desc' },
+    include: {
+      disease: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+// Ambil detail diagnosis berdasarkan ID
+export const getDiagnosisById = async (id: string) => {
+  return await prisma.diagnosis.findUnique({
+    where: { id },
+    include: {
+      disease: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 };

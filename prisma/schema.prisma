@@ -24,7 +24,6 @@ model User {
 model Disease {
   id             String        @id @default(auto()) @map("_id") @db.ObjectId
   name           String
-  name_id        String
   penyebab       String
   deskripsi      String
   pencegahan     String[]
