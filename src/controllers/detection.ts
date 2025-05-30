@@ -27,7 +27,7 @@ export const deseaseDetection = async (
           confidence,
           disease: null,
         },
-        'Tingkat keyakinan kurang dari 90%, penyakit tidak dapat diidentifikasi dengan akurat.',
+        'Penyakit tidak ditemukan.',
         res
       );
     }
