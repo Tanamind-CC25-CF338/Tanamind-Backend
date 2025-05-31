@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth';
 import detectionRoutes from './routes/detection';
+import diseaseRoutes from './routes/disease';
 import { verifyToken } from './middleware/authMiddleware';
 
 dotenv.config();
@@ -29,6 +30,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/diseases', diseaseRoutes);
 app.use('/api/detection', verifyToken, detectionRoutes);
 
 const PORT = process.env.PORT || 5000;
