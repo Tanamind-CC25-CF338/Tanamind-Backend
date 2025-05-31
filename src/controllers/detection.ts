@@ -176,7 +176,6 @@ export const getDiagnosisHistory = async (
   try {
     const userId = req.params.userId;
     const history = await getDiagnosesByUser(userId);
-    console.log(history);
     return response(200, history, 'Riwayat diagnosis berhasil diambil', res);
   } catch (err) {
     console.error('❌ Failed to get history:', err);
