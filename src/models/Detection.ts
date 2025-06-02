@@ -1,6 +1,5 @@
 import prisma from '../db';
 
-// Simpan hasil diagnosis ke database
 export const saveDiagnose = async ({
   userId,
   tanaman,
@@ -9,7 +8,7 @@ export const saveDiagnose = async ({
   diseaseId,
 }: {
   userId: string;
-  tanaman: 'TOMAT' | 'CABAI' | 'SELADA'; // enum Tanaman
+  tanaman: 'TOMAT' | 'CABAI' | 'SELADA';
   confidence: number;
   diseaseId: string;
   imageUrl?: string;
@@ -25,7 +24,6 @@ export const saveDiagnose = async ({
   });
 };
 
-// Ambil semua diagnosis berdasarkan user
 export const getDiagnosesByUser = async (userId: string) => {
   return await prisma.diagnosis.findMany({
     where: { userId },
@@ -38,7 +36,6 @@ export const getDiagnosesByUser = async (userId: string) => {
   });
 };
 
-// Ambil detail diagnosis berdasarkan ID
 export const getDiagnosisById = async (id: string) => {
   return await prisma.diagnosis.findUnique({
     where: { id },

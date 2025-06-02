@@ -1,4 +1,3 @@
-// routes/diseaseRoutes.ts
 import { Router } from 'express';
 import {
   getDiseases,
