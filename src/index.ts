@@ -24,7 +24,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// place to handle all routes
 app.get('/', (req: express.Request, res: express.Response) => {
   res.send('Server is working!');
 });

@@ -25,7 +25,6 @@ export const signupUser = async (
       return response(400, null, 'All fields are required', res);
     }
 
-    // check user was exist or not by email
     const userEmail = await findUserByEmail(email);
 
     if (userEmail) {
