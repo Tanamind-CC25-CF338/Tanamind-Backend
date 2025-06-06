@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import detectionRoutes from './routes/detection';
 import diseaseRoutes from './routes/disease';
 import { verifyToken } from './middleware/authMiddleware';
+import weatherRoutes from './routes/weather';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/diseases', diseaseRoutes);
 app.use('/api/detection', verifyToken, detectionRoutes);
+app.use('/api', weatherRoutes);
 
 const PORT = process.env.PORT || 5000;
 
