@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import detectionRoutes from './routes/detection';
 import diseaseRoutes from './routes/disease';
 import { verifyToken } from './middleware/authMiddleware';
+import plantingRouter from './routes/planting';
 import weatherRoutes from './routes/weather';
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/diseases', diseaseRoutes);
 app.use('/api/detection', verifyToken, detectionRoutes);
 app.use('/api', weatherRoutes);
+app.use('/api/planting', plantingRouter);
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,4 +1,5 @@
 import prisma from '../db';
+import { JenisTanaman } from '@prisma/client';
 
 export const findUserByEmail = async (email: string) => {
   const user = await prisma.user.findUnique({
@@ -67,4 +68,36 @@ export const updatePassword = async (userId: string, newPassword: string) => {
   });
 
   return user;
+};
+
+const isValidJenisTanaman = (value: string): value is JenisTanaman =>
+  Object.values(JenisTanaman).includes(value.toUpperCase() as JenisTanaman);
+
+export const createPlanting = async (userId: string, tanaman: string) => {
+  const tanamanEnum = tanaman.toUpperCase();
+
+  if (!isValidJenisTanaman(tanamanEnum)) {
+    throw new Error(`Jenis tanaman tidak valid: ${tanaman}`);
+  }
+
+  return await prisma.planting.create({
+    data: {
+      userId,
+      tanaman: tanamanEnum as JenisTanaman,
+    },
+  });
+};
+
+export const getPlantingsByUser = async (userId: string) => {
+  return await prisma.planting.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+export const markPlantingAsDone = async (id: string) => {
+  return await prisma.planting.update({
+    where: { id },
+    data: { isDone: true },
+  });
 };
