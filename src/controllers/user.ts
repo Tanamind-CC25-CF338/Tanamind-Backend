@@ -120,54 +120,65 @@ export const callbackLoginWithGoogle = async (
   try {
     const { code } = req.query;
 
-    const { tokens } = await oauth2Client.getToken(code as string);
+    if (!code) {
+      return response(400, null, 'Authorization code is missing', res);
+    }
 
+    const { tokens } = await oauth2Client.getToken(code as string);
     oauth2Client.setCredentials(tokens);
 
-    const oaauth2 = google.oauth2({
+    const oauth2 = google.oauth2({
       auth: oauth2Client,
       version: 'v2',
     });
 
-    const { data } = await oaauth2.userinfo.get();
+    const { data } = await oauth2.userinfo.get();
 
     if (!data.email) {
       return response(404, data, 'User not found', res);
     }
 
-    const user = await findUserByEmail(data.email);
-
-    let userData;
+    let user = await findUserByEmail(data.email);
 
     if (!user) {
-      userData = await createUser({
+      user = await createUser({
         name: data.name,
         email: data.email,
         auth_provider: 'GOOGLE',
       });
-    } else {
-      userData = user;
     }
 
     const token = generateTokenAndSetCookie(
-      userData.id,
-      userData.name,
-      userData.email,
+      user.id,
+      user.name,
+      user.email,
       res
     );
 
-    const clientURL:
-      | string
-      | undefined = `${process.env.CLIENT_URL}/callback-google?token=${token}`;
+    const referer = req.headers.referer;
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      process.env.CLIENT_LOCAL_URL,
+    ].filter(Boolean);
 
-    if (!clientURL) {
-      throw new Error('CLIENT_URL is not defined');
+    let baseClientUrl: string | undefined;
+
+    if (referer) {
+      const origin = new URL(referer).origin;
+      if (allowedOrigins.includes(origin)) {
+        baseClientUrl = origin;
+      }
     }
 
-    res.redirect(clientURL);
+    if (!baseClientUrl) {
+      baseClientUrl = process.env.CLIENT_URL;
+    }
+
+    const redirectUrl = `${baseClientUrl}/callback-google?token=${token}`;
+    return res.redirect(redirectUrl);
   } catch (error) {
-    console.log(error);
-    return response(500, null, 'Server error when login with google', res);
+    console.error('Google login error:', error);
+    return response(500, null, 'Server error during Google login', res);
   }
 };
 

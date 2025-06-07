@@ -1,4 +1,3 @@
-// src/services/weatherService.ts
 import axios from 'axios';
 
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY!;
